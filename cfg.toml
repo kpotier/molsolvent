@@ -1,0 +1,71 @@
+# types are the types of calculations that will be performed. If several types
+# are inside the same array, they will be run in parallel. The rank order is
+# important here. Be aware that some calculations will use all the CPU.
+# Therefore, these calculations should not be run in parallel with other
+# calculations. 
+types = [["no_pbc"], ["dist_two_atoms", "radius_gyration"], ["gr"], ["volume"]]
+files = [["./cfg.toml"], ["./cfg.toml", "./cfg.toml"], ["./cfg.toml"], ["./cfg.toml"]]
+
+[no_pbc]
+file_in = "./traj.lammpstrj"
+file_out = "./traj_nopbc.lammpstrj"
+
+# The size of the molecule 4732 is specified. If the distance between two
+# atoms in this molecule are greater than the ones specified, one atom will
+# be displaced. For every other molecules, the distances are the position of
+# the box divided by two. This only applies for the first configuration.
+size = {1483 = [20, 20, 20]} # Attention, the molecule ID doesn't start at 0 (because we can start at whatever number we want for the ID)
+
+[dist_two_atoms]
+file_in = "./traj_nopbc.lammpstrj"
+file_out = "dist.log"
+
+cfg_start = 0
+cfg_end = 20001 # Reminder: every identifier starts from 0 and [conf_start; conf_end[
+
+atom_1 = 4446 # Start at 0
+atom_2 = 4462
+
+dt = 5000
+
+[radius_gyration]
+file_in = "./traj_nopbc.lammpstrj"
+file_out = "gyr.log"
+
+cfg_start = 0
+cfg_end = 20001
+
+atom_start = 4446
+atom_end = 4466 # [atom_start; atom_end[
+masses = {3 = 12.011000, 4 = 15.999000, 5 = 15.999000, 6 = 1.008000, 7 = 12.011000, 8 = 1.008000} # Masses don't start at 0 (because we can start at whatever number we want for the ID)
+
+dt = 5000
+
+[gr]
+file_in = "./traj_npt.lammpstrj"
+file_out = "./gr.log"
+
+cfg_start = 0
+cfg_end = 2
+
+atoms = {3 = ["1", "2"], 4 = ["1", "2"], 5 = ["1", "2"], 6 = ["1", "2"], 7 = ["1", "2"], 8 = ["1", "2"]} # Atom types (do not start at 0 because we can start at whatever number we want for the ID)
+
+dr = 0.02
+rmax = 9.8
+
+[volume]
+file_in = "./traj_npt.lammpstrj"
+file_out = "./volume.log"
+file_out_xyz = "./volume.xyz"
+
+cfg_start = 0
+cfg_end = 20001
+cfg_spacing = 10
+
+bloc = [0.1, 0.1, 0.1] # Size of a bloc
+blocs = [25, 25, 25] # Number of blocs around each atom
+
+atoms = ["3", "4", "5", "7", "8"] # Atom types (cf in gr)
+sigma = {2 = 3.166, 3 = 3.0, 4 = 3.75, 5 = 2.96, 7 = 3.5, 8 = 2.5} # sigma for each atom type
+
+dt = 5000
